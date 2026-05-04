@@ -1,33 +1,70 @@
-index.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LibrePay POS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LibrePay Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { background-color: #0a0a0a; color: #ffffff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .display { font-size: 64px; font-weight: bold; margin-bottom: 30px; color: #006d77; }
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 90%; max-width: 350px; }
-        button { background: #1a1a1a; border: 1px solid #333; color: white; padding: 25px; font-size: 24px; border-radius: 15px; }
-        .btn-pay { background: #006d77; grid-column: span 3; font-weight: bold; margin-top: 10px; }
+        body { background: #0a0a0a; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
+        .header { margin-top: 20px; color: #006d77; font-weight: bold; letter-spacing: 1px; }
+        .display { font-size: 56px; margin: 30px 0; font-weight: bold; color: #fff; }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 90%; flex-grow: 1; margin-bottom: 20px; }
+        button { background: #1a1a1a; border: none; color: white; font-size: 24px; border-radius: 12px; padding: 20px 0; -webkit-tap-highlight-color: transparent; }
+        button:active { background: #333; }
+        .btn-pay { background: #006d77; grid-column: span 3; font-weight: bold; font-size: 20px; }
+        .btn-pay:active { background: #008b96; }
+        /* QR Overlay */
+        #qr-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        #qrcode { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .close-qr { background: #ff4444; padding: 15px 40px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div style="font-size: 10px; color: #006d77; margin-bottom: 10px;">Merchant ID: TTn4XFhn...rmN9bA</div>
+    <div class="header">LIBREPAY TERMINAL ⚡️</div>
     <div class="display" id="val">0</div>
+
     <div class="numpad">
         <button onclick="add(1)">1</button><button onclick="add(2)">2</button><button onclick="add(3)">3</button>
         <button onclick="add(4)">4</button><button onclick="add(5)">5</button><button onclick="add(6)">6</button>
         <button onclick="add(7)">7</button><button onclick="add(8)">8</button><button onclick="add(9)">9</button>
-        <button style="color: #f44;" onclick="cls()">C</button><button onclick="add(0)">0</button><button onclick="add('.')">.</button>
-        <button class="btn-pay" onclick="pay()">GENERATE INVOICE ⚡️</button>
+        <button onclick="cls()" style="color: #ff4444;">C</button><button onclick="add(0)">0</button><button onclick="add('.')">.</button>
+        <button class="btn-pay" onclick="generateQR()">GENERATE INVOICE</button>
     </div>
+
+    <div id="qr-overlay">
+        <div style="margin-bottom: 10px; color: #006d77;">Scan to pay USDT (TRC-20)</div>
+        <div id="qrcode"></div>
+        <div id="qr-amount" style="font-size: 24px; margin-bottom: 20px;"></div>
+        <button class="close-qr" onclick="closeQR()">CLOSE</button>
+    </div>
+
     <script>
         let v = "0";
-        function add(n) { v === "0" && n !== '.' ? v = n.toString() : v += n.toString(); document.getElementById('val').innerText = v; }
+        let wallet = "TTn4XFhnQVXRob8boyLaUS6iHH1QrmN9bA";
+
+        function add(n) {
+            if(v === "0" && n !== '.') v = n.toString();
+            else if(v.length < 10) v += n.toString();
+            document.getElementById('val').innerText = v;
+        }
         function cls() { v = "0"; document.getElementById('val').innerText = v; }
-        function pay() { Telegram.WebApp.showAlert("Invoice for " + v + " USDT generated!"); }
+
+        function generateQR() {
+            if(parseFloat(v) <= 0) return;
+            document.getElementById('qrcode').innerHTML = "";
+            // Формат TRON: просто адреса (більшість гаманців так сприймають USDT)
+            new QRCode(document.getElementById("qrcode"), { text: wallet, width: 200, height: 200 });
+            document.getElementById('qr-amount').innerText = v + " USDT";
+            document.getElementById('qr-overlay').style.display = 'flex';
+            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+        }
+
+        function closeQR() { document.getElementById('qr-overlay').style.display = 'none'; }
+        
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
     </script>
 </body>
 </html>
