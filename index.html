@@ -1,0 +1,33 @@
+index.<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibrePay POS</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { background-color: #0a0a0a; color: #ffffff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .display { font-size: 64px; font-weight: bold; margin-bottom: 30px; color: #006d77; }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 90%; max-width: 350px; }
+        button { background: #1a1a1a; border: 1px solid #333; color: white; padding: 25px; font-size: 24px; border-radius: 15px; }
+        .btn-pay { background: #006d77; grid-column: span 3; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div style="font-size: 10px; color: #006d77; margin-bottom: 10px;">Merchant ID: TTn4XFhn...rmN9bA</div>
+    <div class="display" id="val">0</div>
+    <div class="numpad">
+        <button onclick="add(1)">1</button><button onclick="add(2)">2</button><button onclick="add(3)">3</button>
+        <button onclick="add(4)">4</button><button onclick="add(5)">5</button><button onclick="add(6)">6</button>
+        <button onclick="add(7)">7</button><button onclick="add(8)">8</button><button onclick="add(9)">9</button>
+        <button style="color: #f44;" onclick="cls()">C</button><button onclick="add(0)">0</button><button onclick="add('.')">.</button>
+        <button class="btn-pay" onclick="pay()">GENERATE INVOICE ⚡️</button>
+    </div>
+    <script>
+        let v = "0";
+        function add(n) { v === "0" && n !== '.' ? v = n.toString() : v += n.toString(); document.getElementById('val').innerText = v; }
+        function cls() { v = "0"; document.getElementById('val').innerText = v; }
+        function pay() { Telegram.WebApp.showAlert("Invoice for " + v + " USDT generated!"); }
+    </script>
+</body>
+</html>
